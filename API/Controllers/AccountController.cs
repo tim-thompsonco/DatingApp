@@ -1,11 +1,11 @@
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
