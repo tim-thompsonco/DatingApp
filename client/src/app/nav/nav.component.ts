@@ -14,7 +14,7 @@ export class NavComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  login(): any {
+  login(): void {
     this.accountService.login(this.model).subscribe(
       (response) => {
         console.log(response);
@@ -24,5 +24,9 @@ export class NavComponent implements OnInit {
         console.log(error);
       }
     );
+  }
+
+  logout(): void {
+    this.loggedIn = false;
   }
 }
