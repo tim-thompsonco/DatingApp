@@ -1,3 +1,4 @@
+// libs
 import { Component, OnInit } from '@angular/core';
 
 @Component({
@@ -14,5 +15,9 @@ export class HomeComponent implements OnInit {
 
   registerToggle(): void {
     this.registerMode = !this.registerMode;
+  }
+
+  cancelRegisterMode(event: boolean): void {
+    this.registerMode = event;
   }
 }

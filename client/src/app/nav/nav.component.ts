@@ -1,4 +1,7 @@
+// libs
 import { Component, OnInit } from '@angular/core';
+
+// services
 import { AccountService } from '../_services/account.service';
 
 @Component({
