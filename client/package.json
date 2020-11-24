@@ -1,12 +1,12 @@
 {
   "name": "client",
-	"version": "0.0.0",
-	"husky": {
+  "version": "0.0.0",
+  "husky": {
     "hooks": {
-			"pre-commit": "pretty-quick --staged && ng lint",
-			"pre-push": "ng build --aot true"
+      "pre-commit": "pretty-quick --staged && ng lint",
+      "pre-push": "ng build --aot true"
     }
-	},
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -28,6 +28,7 @@
     "bootstrap": "4.1.1",
     "font-awesome": "^4.7.0",
     "ngx-bootstrap": "^6.2.0",
+    "ngx-toastr": "^13.1.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"

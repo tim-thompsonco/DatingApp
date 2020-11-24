@@ -1,11 +1,14 @@
+// libs
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-
 import { AppRoutingModule } from './app-routing.module';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { ToastrModule } from 'ngx-toastr';
+
+// components
 import { AppComponent } from './app.component';
 import { NavComponent } from './nav/nav.component';
 import { HomeComponent } from './home/home.component';
@@ -33,6 +36,9 @@ import { MessagesComponent } from './messages/messages.component';
     BrowserAnimationsModule,
     FormsModule,
     BsDropdownModule.forRoot(),
+    ToastrModule.forRoot({
+      positionClass: 'toast-bottom-right',
+    }),
   ],
   providers: [],
   bootstrap: [AppComponent],
