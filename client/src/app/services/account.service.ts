@@ -5,7 +5,7 @@ import { ReplaySubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 // models
-import { User } from '../Models/user';
+import { User } from '../models/user';
 
 @Injectable({
   providedIn: 'root',
