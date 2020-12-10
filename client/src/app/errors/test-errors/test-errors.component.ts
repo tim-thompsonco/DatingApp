@@ -36,7 +36,7 @@ export class TestErrorsComponent implements OnInit {
     );
   }
 
-  get500Error() {
+  get500Error(): void {
     this.http.get(this.baseUrl + 'buggy/server-error').subscribe(
       (response) => {
         console.log(response);
@@ -47,7 +47,7 @@ export class TestErrorsComponent implements OnInit {
     );
   }
 
-  get401Error() {
+  get401Error(): void {
     this.http.get(this.baseUrl + 'buggy/auth').subscribe(
       (response) => {
         console.log(response);
@@ -58,7 +58,7 @@ export class TestErrorsComponent implements OnInit {
     );
   }
 
-  get400ValidationError() {
+  get400ValidationError(): void {
     this.http.post(this.baseUrl + 'account/register', {}).subscribe(
       (response) => {
         console.log(response);
