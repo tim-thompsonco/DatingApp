@@ -4,6 +4,7 @@
   "files.exclude": {
     "**/node_modules/": true,
     "**/dist": true,
-    "**/ssl": true
+    "**/ssl": true,
+    "**run-*": true
   }
 }
