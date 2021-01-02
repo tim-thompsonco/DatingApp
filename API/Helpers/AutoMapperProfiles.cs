@@ -4,12 +4,9 @@ using API.Extensions;
 using AutoMapper;
 using System.Linq;
 
-namespace API.Helpers
-{
-	public class AutoMapperProfiles : Profile
-	{
-		public AutoMapperProfiles()
-		{
+namespace API.Helpers {
+	public class AutoMapperProfiles : Profile {
+		public AutoMapperProfiles() {
 			CreateMap<AppUser, MemberDto>()
 				.ForMember(
 					dest => dest.PhotoUrl,
