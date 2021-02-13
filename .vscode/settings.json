@@ -5,6 +5,9 @@
     "**/node_modules/": true,
     "**/dist": true,
     "**/ssl": true,
-    "**run-*": true
+    "**run-*": true,
+    ".vs": true,
+    "**/bin": true,
+    "**/obj": true
   }
 }
