@@ -4,6 +4,7 @@
 <h2>Built With</h2>
   <ul>
     <li>Angular 11
+    <li>C#
     <li>TypeScript
     <li>.NET Core
     <li>SQLite
