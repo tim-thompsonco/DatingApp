@@ -32,7 +32,7 @@
       dropdown
     >
       <a class="dropdown-toggle text-light mr-2" dropdownToggle
-        >Welcome {{ user.userName | titlecase }}</a
+        >Welcome {{ user.knownAs | titlecase }}</a
       >
       <img
         src="{{ user.photoUrl ? user.photoUrl : '../assets/user.png' }}"
