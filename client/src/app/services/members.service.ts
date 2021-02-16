@@ -29,6 +29,7 @@ export class MembersService {
     params = params.append('minAge', userParams.minAge.toString());
     params = params.append('maxAge', userParams.maxAge.toString());
     params = params.append('gender', userParams.gender);
+    params = params.append('orderBy', userParams.orderBy);
 
     return this.getPaginatedResult<Member[]>(`${this.baseUrl}users`, params);
   }
@@ -40,7 +41,7 @@ export class MembersService {
     let params = new HttpParams();
 
     params = params.append('pageNumber', pageNumber.toString());
-    params = params.append('pageNumber', pageSize.toString());
+    params = params.append('pageSize', pageSize.toString());
 
     return params;
   }
