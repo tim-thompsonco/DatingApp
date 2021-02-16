@@ -446,3 +446,6 @@ appsettings.json
 
 ## Default user password for testing
 testuserpassword.txt
+
+# Package lock
+client/package-lock.json
