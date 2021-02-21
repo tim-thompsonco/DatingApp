@@ -146,7 +146,9 @@ export class MembersService {
     return this.http.post(`${this.baseUrl}likes/${username}`, {});
   }
 
-  getLikes(predicate: string): Observable<object> {
-    return this.http.get(`${this.baseUrl}likes?=${predicate}`);
+  getLikes(predicate: string): Observable<Member[]> {
+    return this.http.get<Partial<Member[]>>(
+      `${this.baseUrl}likes?predicate=${predicate}`
+    );
   }
 }
