@@ -52,13 +52,13 @@ namespace API.Data {
 		}
 
 		public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams) {
-			var query = _context.Users.AsQueryable();
+			IQueryable<AppUser> query = _context.Users.AsQueryable();
 
 			query = query.Where(user => user.UserName != userParams.CurrentUsername);
 			query = query.Where(user => user.Gender == userParams.Gender);
 
-			var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
-			var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
+			DateTime minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
+			DateTime maxDob = DateTime.Today.AddYears(-userParams.MinAge);
 
 			query = query.Where(user => user.DateOfBirth >= minDob && user.DateOfBirth <= maxDob);
 

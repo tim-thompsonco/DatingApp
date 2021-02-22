@@ -28,9 +28,9 @@ namespace API.Controllers {
 				return BadRequest("Username is taken.");
 			}
 
-			var user = _mapper.Map<AppUser>(registerDto);
+			AppUser user = _mapper.Map<AppUser>(registerDto);
 
-			using var hmac = new HMACSHA512();
+			using HMACSHA512 hmac = new HMACSHA512();
 
 			user.UserName = registerDto.UserName.ToLower();
 			user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
@@ -49,15 +49,17 @@ namespace API.Controllers {
 
 		[HttpPost("login")]
 		public async Task<ActionResult<UserDto>> Login(LoginDto loginDto) {
-			var user = await _context.Users
+			AppUser user = await _context.Users
 				.Include(p => p.Photos)
 				.SingleOrDefaultAsync(user => user.UserName == loginDto.UserName);
 
-			if (user == null) return Unauthorized("Invalid username.");
+			if (user == null) {
+				return Unauthorized("Invalid username.");
+			}
 
-			using var hmac = new HMACSHA512(user.PasswordSalt);
+			using HMACSHA512 hmac = new HMACSHA512(user.PasswordSalt);
 
-			var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
+			byte[] computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
 
 			for (int i = 0; i < computedHash.Length; i++) {
 				if (computedHash[i] != user.PasswordHash[i]) {

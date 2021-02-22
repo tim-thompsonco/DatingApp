@@ -1,11 +1,11 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace API.Controllers {
 	[Authorize]
@@ -20,20 +20,20 @@ namespace API.Controllers {
 
 		[HttpPost("{username}")]
 		public async Task<ActionResult> AddLike(string username) {
-			var likedUser = await _userRepository.GetUserByUsernameAsync(username);
+			AppUser likedUser = await _userRepository.GetUserByUsernameAsync(username);
 
 			if (likedUser == null) {
 				return NotFound();
 			}
 
-			var sourceUserId = User.GetUserId();
-			var sourceUser = await _likesRepository.GetUserWithLikes(sourceUserId);
+			int sourceUserId = User.GetUserId();
+			AppUser sourceUser = await _likesRepository.GetUserWithLikes(sourceUserId);
 
 			if (sourceUser.UserName == username) {
 				return BadRequest("You cannot like yourself");
 			}
 
-			var userLike = await _likesRepository.GetUserLike(sourceUserId, likedUser.Id);
+			UserLike userLike = await _likesRepository.GetUserLike(sourceUserId, likedUser.Id);
 
 			if (userLike != null) {
 				return BadRequest("You already liked this user");
@@ -55,7 +55,7 @@ namespace API.Controllers {
 
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<LikeDto>>> GetUserLikes(string predicate) {
-			var users = await _likesRepository.GetUserLikes(predicate, User.GetUserId());
+			IEnumerable<LikeDto> users = await _likesRepository.GetUserLikes(predicate, User.GetUserId());
 
 			return Ok(users);
 		}

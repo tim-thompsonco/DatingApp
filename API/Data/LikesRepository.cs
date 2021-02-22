@@ -19,8 +19,8 @@ namespace API.Data {
 		}
 
 		public async Task<IEnumerable<LikeDto>> GetUserLikes(string predicate, int userId) {
-			var users = _context.Users.OrderBy(user => user.UserName).AsQueryable();
-			var likes = _context.Likes.AsQueryable();
+			IQueryable<AppUser> users = _context.Users.OrderBy(user => user.UserName).AsQueryable();
+			IQueryable<UserLike> likes = _context.Likes.AsQueryable();
 
 			if (predicate == "liked") {
 				likes = likes.Where(like => like.SourceUserId == userId);
