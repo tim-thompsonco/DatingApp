@@ -1,13 +1,11 @@
 // libs
 import { Component, OnInit } from '@angular/core';
-import { take } from 'rxjs/operators';
 
 // models
 import { Member } from 'src/app/models/member';
 import { Pagination } from 'src/app/models/pagination';
 import { User } from 'src/app/models/user';
 import { UserParams } from 'src/app/models/userParams';
-import { AccountService } from 'src/app/services/account.service';
 
 // services
 import { MembersService } from 'src/app/services/members.service';
