@@ -5,6 +5,7 @@ namespace API.Data {
 	public class DataContext : DbContext {
 		public DbSet<AppUser> Users { get; set; }
 		public DbSet<UserLike> Likes { get; set; }
+		public DbSet<Message> Messages { get; set; }
 
 		public DataContext(DbContextOptions options) : base(options) {
 		}
@@ -25,6 +26,16 @@ namespace API.Data {
 					.WithMany(likedBy => likedBy.LikedByUsers)
 					.HasForeignKey(source => source.LikedUserId)
 					.OnDelete(DeleteBehavior.Cascade);
+
+			builder.Entity<Message>()
+			  .HasOne(user => user.Recipient)
+			  .WithMany(message => message.MessagesReceived)
+			  .OnDelete(DeleteBehavior.Restrict);
+
+			builder.Entity<Message>()
+			  .HasOne(user => user.Sender)
+			  .WithMany(message => message.MessagesSent)
+			  .OnDelete(DeleteBehavior.Restrict);
 		}
 	}
 }
