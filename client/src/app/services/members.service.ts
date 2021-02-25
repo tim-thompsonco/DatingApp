@@ -12,6 +12,7 @@ import { PaginatedResult } from '../models/pagination';
 import { User } from '../models/user';
 import { UserParams } from '../models/userParams';
 import { AccountService } from './account.service';
+import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
 
 @Injectable({
   providedIn: 'root',
@@ -55,7 +56,7 @@ export class MembersService {
       return of(cacheResponse);
     }
 
-    let params = this.getPaginationHeaders(
+    let params = getPaginationHeaders(
       userParams.pageNumber,
       userParams.pageSize
     );
@@ -65,9 +66,10 @@ export class MembersService {
     params = params.append('gender', userParams.gender);
     params = params.append('orderBy', userParams.orderBy);
 
-    return this.getPaginatedResult<Member[]>(
+    return getPaginatedResult<Member[]>(
       `${this.baseUrl}users`,
-      params
+      params,
+      this.http
     ).pipe(
       map((response) => {
         this.memberCache.set(cacheKey, response);
@@ -75,41 +77,6 @@ export class MembersService {
         return response;
       })
     );
-  }
-
-  private getPaginationHeaders(
-    pageNumber: number,
-    pageSize: number
-  ): HttpParams {
-    let params = new HttpParams();
-
-    params = params.append('pageNumber', pageNumber.toString());
-    params = params.append('pageSize', pageSize.toString());
-
-    return params;
-  }
-
-  private getPaginatedResult<T>(url, params): Observable<PaginatedResult<T>> {
-    const paginatedResult: PaginatedResult<T> = new PaginatedResult<T>();
-
-    return this.http
-      .get<T>(url, {
-        observe: 'response',
-        params,
-      })
-      .pipe(
-        map((response) => {
-          paginatedResult.result = response.body;
-
-          if (response.headers.get('Pagination') !== null) {
-            paginatedResult.pagination = JSON.parse(
-              response.headers.get('Pagination')
-            );
-          }
-
-          return paginatedResult;
-        })
-      );
   }
 
   getMember(username: string): Observable<Member> {
@@ -151,12 +118,13 @@ export class MembersService {
     pageNumber: number,
     pageSize: number
   ): Observable<PaginatedResult<Partial<Member[]>>> {
-    let params = this.getPaginationHeaders(pageNumber, pageSize);
+    let params = getPaginationHeaders(pageNumber, pageSize);
     params = params.append('predicate', predicate);
 
-    return this.getPaginatedResult<Partial<Member[]>>(
+    return getPaginatedResult<Partial<Member[]>>(
       `${this.baseUrl}likes`,
-      params
+      params,
+      this.http
     );
   }
 }
