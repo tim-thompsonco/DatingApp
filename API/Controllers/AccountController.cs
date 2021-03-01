@@ -1,25 +1,25 @@
-using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace API.Controllers {
 	public class AccountController : BaseApiController {
-		private readonly DataContext _context;
 		private readonly ITokenService _tokenService;
 		private readonly IMapper _mapper;
+		private readonly UserManager<AppUser> _userManager;
+		private readonly SignInManager<AppUser> _signInManager;
 
-		public AccountController(DataContext context, ITokenService tokenService, IMapper mapper) {
+		public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenService tokenService, IMapper mapper) {
+			_signInManager = signInManager;
+			_userManager = userManager;
 			_mapper = mapper;
 			_tokenService = tokenService;
-			_context = context;
 		}
 
 		[HttpPost("register")]
@@ -32,8 +32,11 @@ namespace API.Controllers {
 
 			user.UserName = registerDto.UserName.ToLower();
 
-			_context.Users.Add(user);
-			await _context.SaveChangesAsync();
+			IdentityResult result = await _userManager.CreateAsync(user, registerDto.Password);
+
+			if (!result.Succeeded) {
+				return BadRequest(result.Errors);
+			}
 
 			return new UserDto {
 				UserName = user.UserName,
@@ -45,12 +48,18 @@ namespace API.Controllers {
 
 		[HttpPost("login")]
 		public async Task<ActionResult<UserDto>> Login(LoginDto loginDto) {
-			AppUser user = await _context.Users
+			AppUser user = await _userManager.Users
 				.Include(p => p.Photos)
-				.SingleOrDefaultAsync(user => user.UserName == loginDto.UserName);
+				.SingleOrDefaultAsync(user => user.UserName == loginDto.UserName.ToLower());
 
 			if (user == null) {
 				return Unauthorized("Invalid username.");
+			}
+
+			var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+
+			if (!result.Succeeded) {
+				return Unauthorized();
 			}
 
 			return new UserDto {
@@ -63,7 +72,7 @@ namespace API.Controllers {
 		}
 
 		private async Task<bool> UserExists(string username) {
-			return await _context.Users.AnyAsync(user => user.UserName == username.ToLower());
+			return await _userManager.Users.AnyAsync(user => user.UserName == username.ToLower());
 		}
 	}
 }
