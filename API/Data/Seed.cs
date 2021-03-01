@@ -1,4 +1,5 @@
 using API.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -6,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace API.Data {
 	public class Seed {
-		public static async Task SeedUsers(DataContext context) {
-			if (await context.Users.AnyAsync()) {
+		public static async Task SeedUsers(UserManager<AppUser> userManager) {
+			if (await userManager.Users.AnyAsync()) {
 				return;
 			}
 
@@ -17,10 +18,8 @@ namespace API.Data {
 			foreach (AppUser user in users) {
 				user.UserName = user.UserName.ToLower();
 
-				context.Users.Add(user);
+				await userManager.CreateAsync(user, "Pa$$w0rd");
 			}
-
-			await context.SaveChangesAsync();
 		}
 	}
 }
