@@ -1,11 +1,12 @@
-// libs
+// Libs
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
-// models
+// Models
+import { DecodedToken } from '../models/decodedToken';
 import { User } from '../models/user';
 
 @Injectable({
@@ -55,7 +56,7 @@ export class AccountService {
     this.currentUserSource.next(null);
   }
 
-  getDecodedToken(token: string): string {
+  getDecodedToken(token: string): DecodedToken {
     return JSON.parse(atob(token.split('.')[1]));
   }
 }
