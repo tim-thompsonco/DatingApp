@@ -19,7 +19,7 @@
           >
         </li>
       </ng-container>
-      <li class="nav-item">
+      <li *appHasRole="['Admin', 'Moderator']" class="nav-item">
         <a class="nav-link" routerLink="/admin" routerLinkActive="active"
           >Admin</a
         >
@@ -32,7 +32,7 @@
       dropdown
     >
       <a class="dropdown-toggle text-light mr-2" dropdownToggle
-        >Welcome {{ user.knownAs | titlecase }}</a
+        >Welcome {{ user.knownAs || user.userName | titlecase }}</a
       >
       <img
         src="{{ user.photoUrl ? user.photoUrl : '../assets/user.png' }}"
