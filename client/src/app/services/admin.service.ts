@@ -20,4 +20,11 @@ export class AdminService {
       `${this.baseUrl}admin/users-with-roles`
     );
   }
+
+  updateUserRoles(username: string, roles: string[]): Observable<object> {
+    return this.http.post(
+      `${this.baseUrl}admin/edit-roles/${username}?roles=${roles}`,
+      {}
+    );
+  }
 }
