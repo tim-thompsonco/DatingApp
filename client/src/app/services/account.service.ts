@@ -8,6 +8,7 @@ import { environment } from 'src/environments/environment';
 // Models
 import { DecodedToken } from '../models/decodedToken';
 import { User } from '../models/user';
+import { PresenceService } from './presence.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,7 @@ export class AccountService {
   private currentUserSource = new ReplaySubject<User>(1);
   currentUser$ = this.currentUserSource.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private presence: PresenceService) {}
 
   login(model: any): any {
     return this.http.post(this.baseUrl + 'account/login', model).pipe(
@@ -25,6 +26,7 @@ export class AccountService {
         const user = response;
         if (user) {
           this.setCurrentUser(user);
+          this.presence.createHubConnection(user);
         }
       })
     );
@@ -35,6 +37,7 @@ export class AccountService {
       map((user: User) => {
         if (user) {
           this.setCurrentUser(user);
+          this.presence.createHubConnection(user);
         }
       })
     );
@@ -52,8 +55,8 @@ export class AccountService {
 
   logout(): void {
     localStorage.removeItem('user');
-
     this.currentUserSource.next(null);
+    this.presence.stopHubConnection();
   }
 
   getDecodedToken(token: string): DecodedToken {
