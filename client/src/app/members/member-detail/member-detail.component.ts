@@ -1,4 +1,4 @@
-// libs
+// Libs
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -8,13 +8,13 @@ import {
 } from '@kolkov/ngx-gallery';
 import { TabDirective, TabsetComponent } from 'ngx-bootstrap/tabs';
 
-// services
-import { MembersService } from 'src/app/services/members.service';
-import { MessageService } from 'src/app/services/message.service';
-
-// models
+// Models
 import { Member } from 'src/app/models/member';
 import { Message } from 'src/app/models/message';
+
+// Services
+import { MessageService } from 'src/app/services/message.service';
+import { PresenceService } from 'src/app/services/presence.service';
 
 @Component({
   selector: 'app-member-detail',
@@ -31,7 +31,7 @@ export class MemberDetailComponent implements OnInit {
   member: Member;
 
   constructor(
-    private memberService: MembersService,
+    public presence: PresenceService,
     private messageService: MessageService,
     private route: ActivatedRoute
   ) {}
