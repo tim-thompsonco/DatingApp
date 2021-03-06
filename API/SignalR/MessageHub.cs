@@ -1,3 +1,5 @@
+using API.DTOs;
+using API.Entities;
 using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
@@ -10,8 +12,10 @@ namespace API.SignalR {
 	public class MessageHub : Hub {
 		private readonly IMessageRepository _messageRepository;
 		private readonly IMapper _mapper;
+		private readonly IUserRepository _userRepository;
 
-		public MessageHub(IMessageRepository messageRepository, IMapper mapper) {
+		public MessageHub(IMessageRepository messageRepository, IMapper mapper, IUserRepository userRepository) {
+			_userRepository = userRepository;
 			_mapper = mapper;
 			_messageRepository = messageRepository;
 		}
@@ -30,6 +34,37 @@ namespace API.SignalR {
 
 		public override async Task OnDisconnectedAsync(Exception exception) {
 			await base.OnDisconnectedAsync(exception);
+		}
+
+		public async Task SendMessage(CreateMessageDto createMessageDto) {
+			string username = Context.User.GetUsername();
+
+			if (username.ToLower() == createMessageDto.RecipientUsername.ToLower()) {
+				throw new HubException("You cannot send messages to yourself");
+			}
+
+			AppUser sender = await _userRepository.GetUserByUsernameAsync(username);
+			AppUser recipient = await _userRepository.GetUserByUsernameAsync(createMessageDto.RecipientUsername);
+
+			if (recipient == null) {
+				throw new HubException("User not found");
+			}
+
+			Message message = new Message {
+				Sender = sender,
+				Recipient = recipient,
+				SenderUsername = sender.UserName,
+				RecipientUsername = recipient.UserName,
+				Content = createMessageDto.Content
+			};
+
+			_messageRepository.AddMessage(message);
+
+			if (await _messageRepository.SaveAllAsync()) {
+				string group = GetGroupName(sender.UserName, recipient.UserName);
+
+				await Clients.Group(group).SendAsync("NewMessage", _mapper.Map<MessageDto>(message));
+			}
 		}
 
 		private string GetGroupName(string caller, string other) {
