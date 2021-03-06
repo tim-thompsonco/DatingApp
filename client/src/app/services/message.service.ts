@@ -41,7 +41,9 @@ export class MessageService {
   }
 
   stopHubConnection(): void {
-    this.hubConnection.stop();
+    if (this.hubConnection) {
+      this.hubConnection.stop();
+    }
   }
 
   getMessages(
