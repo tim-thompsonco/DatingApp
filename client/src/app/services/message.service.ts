@@ -1,12 +1,14 @@
 // Libs
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 // Models
 import { Message } from '../models/message';
 import { PaginatedResult } from '../models/pagination';
+import { User } from '../models/user';
 
 // Helpers
 import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
@@ -16,8 +18,31 @@ import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
 })
 export class MessageService {
   baseUrl = environment.apiUrl;
+  hubUrl = environment.hubUrl;
+  private hubConnection: HubConnection;
+  private messageThreadSource = new BehaviorSubject<Message[]>([]);
+  messageThread$ = this.messageThreadSource.asObservable();
 
   constructor(private http: HttpClient) {}
+
+  createHubConnection(user: User, otherUsername: string): void {
+    this.hubConnection = new HubConnectionBuilder()
+      .withUrl(`${this.hubUrl}message?user=${otherUsername}`, {
+        accessTokenFactory: () => user.token,
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    this.hubConnection.start().catch((error) => console.log(error));
+
+    this.hubConnection.on('ReceiveMessageThread', (messages) => {
+      this.messageThreadSource.next(messages);
+    });
+  }
+
+  stopHubConnection(): void {
+    this.hubConnection.stop();
+  }
 
   getMessages(
     pageNumber: number,
