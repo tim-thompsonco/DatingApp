@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,8 +15,14 @@ namespace API.SignalR {
         private readonly IMessageRepository _messageRepository;
         private readonly IMapper _mapper;
         private readonly IUserRepository _userRepository;
+        private readonly IHubContext<PresenceHub> _presenceHub;
+        private readonly PresenceTracker _tracker;
 
-        public MessageHub(IMessageRepository messageRepository, IMapper mapper, IUserRepository userRepository) {
+        public MessageHub(IMessageRepository messageRepository, IMapper mapper,
+        IUserRepository userRepository, IHubContext<PresenceHub> presenceHub,
+        PresenceTracker tracker) {
+            _tracker = tracker;
+            _presenceHub = presenceHub;
             _userRepository = userRepository;
             _mapper = mapper;
             _messageRepository = messageRepository;
@@ -68,6 +75,13 @@ namespace API.SignalR {
 
             if (group.Connections.Any(user => user.Username == recipient.UserName)) {
                 message.DateRead = DateTime.UtcNow;
+            } else {
+                List<string> connections = await _tracker.GetConnectionsForUser(recipient.UserName);
+
+                if (connections != null) {
+                    await _presenceHub.Clients.Clients(connections).SendAsync("NewMessageReceived",
+                    new { username = sender.UserName, knownAs = sender.KnownAs });
+                }
             }
 
             _messageRepository.AddMessage(message);
