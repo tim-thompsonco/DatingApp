@@ -6,21 +6,21 @@ using System;
 using System.Threading.Tasks;
 
 namespace API.Helpers {
-	public class LogUserActivity : IAsyncActionFilter {
-		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
-			ActionExecutedContext resultContext = await next();
+    public class LogUserActivity : IAsyncActionFilter {
+        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
+            ActionExecutedContext resultContext = await next();
 
-			if (!resultContext.HttpContext.User.Identity.IsAuthenticated) {
-				return;
-			}
+            if (!resultContext.HttpContext.User.Identity.IsAuthenticated) {
+                return;
+            }
 
-			IUserRepository repo = resultContext.HttpContext.RequestServices.GetService<IUserRepository>();
+            IUserRepository repo = resultContext.HttpContext.RequestServices.GetService<IUserRepository>();
 
-			int userId = resultContext.HttpContext.User.GetUserId();
-			Entities.AppUser user = await repo.GetUserByIdAsync(userId);
-			user.LastActive = DateTime.Now;
+            int userId = resultContext.HttpContext.User.GetUserId();
+            Entities.AppUser user = await repo.GetUserByIdAsync(userId);
+            user.LastActive = DateTime.Now;
 
-			await repo.SaveAllAsync();
-		}
-	}
+            await repo.SaveAllAsync();
+        }
+    }
 }

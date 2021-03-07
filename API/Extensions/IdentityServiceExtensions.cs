@@ -9,48 +9,48 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace API.Extensions {
-	public static class IdentityServiceExtensions {
-		public static IServiceCollection AddIdentityServices(
-			this IServiceCollection services, IConfiguration config) {
-			services.AddIdentityCore<AppUser>(options => {
-				options.Password.RequireNonAlphanumeric = false;
-			})
-			  .AddRoles<AppRole>()
-			  .AddRoleManager<RoleManager<AppRole>>()
-			  .AddSignInManager<SignInManager<AppUser>>()
-			  .AddRoleValidator<RoleValidator<AppRole>>()
-			  .AddEntityFrameworkStores<DataContext>();
+    public static class IdentityServiceExtensions {
+        public static IServiceCollection AddIdentityServices(
+            this IServiceCollection services, IConfiguration config) {
+            services.AddIdentityCore<AppUser>(options => {
+                options.Password.RequireNonAlphanumeric = false;
+            })
+              .AddRoles<AppRole>()
+              .AddRoleManager<RoleManager<AppRole>>()
+              .AddSignInManager<SignInManager<AppUser>>()
+              .AddRoleValidator<RoleValidator<AppRole>>()
+              .AddEntityFrameworkStores<DataContext>();
 
-			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-				.AddJwtBearer(options => {
-					options.TokenValidationParameters = new TokenValidationParameters {
-						ValidateIssuerSigningKey = true,
-						IssuerSigningKey = new SymmetricSecurityKey(
-							Encoding.UTF8.GetBytes(config["TokenKey"])),
-						ValidateIssuer = false,
-						ValidateAudience = false
-					};
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => {
+                    options.TokenValidationParameters = new TokenValidationParameters {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(config["TokenKey"])),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
 
-					options.Events = new JwtBearerEvents {
-						OnMessageReceived = context => {
-							var accessToken = context.Request.Query["access_token"];
-							var path = context.HttpContext.Request.Path;
+                    options.Events = new JwtBearerEvents {
+                        OnMessageReceived = context => {
+                            Microsoft.Extensions.Primitives.StringValues accessToken = context.Request.Query["access_token"];
+                            Microsoft.AspNetCore.Http.PathString path = context.HttpContext.Request.Path;
 
-							if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs")) {
-								context.Token = accessToken;
-							}
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs")) {
+                                context.Token = accessToken;
+                            }
 
-							return Task.CompletedTask;
-						}
-					};
-				});
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
 
-			services.AddAuthorization(options => {
-				options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
-				options.AddPolicy("ModeratePhotoRole", policy => policy.RequireRole("Admin", "Moderator"));
-			});
+            services.AddAuthorization(options => {
+                options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("ModeratePhotoRole", policy => policy.RequireRole("Admin", "Moderator"));
+            });
 
-			return services;
-		}
-	}
+            return services;
+        }
+    }
 }
