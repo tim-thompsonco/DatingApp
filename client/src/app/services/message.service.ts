@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 // Models
@@ -38,6 +39,12 @@ export class MessageService {
     this.hubConnection.on('ReceiveMessageThread', (messages) => {
       this.messageThreadSource.next(messages);
     });
+
+    this.hubConnection.on('NewMessage', (message) => {
+      this.messageThread$.pipe(take(1)).subscribe((messages) => {
+        this.messageThreadSource.next([...messages, message]);
+      });
+    });
   }
 
   stopHubConnection(): void {
@@ -67,11 +74,10 @@ export class MessageService {
     );
   }
 
-  sendMessage(username: string, content: string): Observable<Message> {
-    return this.http.post<Message>(`${this.baseUrl}messages`, {
-      recipientUsername: username,
-      content,
-    });
+  async sendMessage(username: string, content: string): Promise<any> {
+    return this.hubConnection
+      .invoke('SendMessage', { recipientUsername: username, content })
+      .catch((error) => console.log(error));
   }
 
   deleteMessage(id: number): Observable<object> {
