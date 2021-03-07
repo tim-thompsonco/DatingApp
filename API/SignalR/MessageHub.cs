@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace API.SignalR {
@@ -26,6 +27,7 @@ namespace API.SignalR {
             string groupName = GetGroupName(Context.User.GetUsername(), otherUser);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            await AddToMessageGroup(Context, groupName);
 
             System.Collections.Generic.IEnumerable<MessageDto> messages = await _messageRepository.GetMessageThread(Context.User.GetUsername(), otherUser);
 
@@ -33,6 +35,8 @@ namespace API.SignalR {
         }
 
         public override async Task OnDisconnectedAsync(Exception exception) {
+            await RemoveFromMessageGroup(Context.ConnectionId);
+
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -58,13 +62,41 @@ namespace API.SignalR {
                 Content = createMessageDto.Content
             };
 
+            string groupName = GetGroupName(sender.UserName, recipient.UserName);
+
+            Group group = await _messageRepository.GetMessageGroup(groupName);
+
+            if (group.Connections.Any(user => user.Username == recipient.UserName)) {
+                message.DateRead = DateTime.UtcNow;
+            }
+
             _messageRepository.AddMessage(message);
 
             if (await _messageRepository.SaveAllAsync()) {
-                string group = GetGroupName(sender.UserName, recipient.UserName);
-
-                await Clients.Group(group).SendAsync("NewMessage", _mapper.Map<MessageDto>(message));
+                await Clients.Group(groupName).SendAsync("NewMessage", _mapper.Map<MessageDto>(message));
             }
+        }
+
+        private async Task<bool> AddToMessageGroup(HubCallerContext context, string groupName) {
+            Group group = await _messageRepository.GetMessageGroup(groupName);
+            Connection connection = new Connection(Context.ConnectionId, Context.User.GetUsername());
+
+            if (group == null) {
+                group = new Group(groupName);
+                _messageRepository.AddGroup(group);
+            }
+
+            group.Connections.Add(connection);
+
+            return await _messageRepository.SaveAllAsync();
+        }
+
+        private async Task RemoveFromMessageGroup(string connectionId) {
+            Connection connection = await _messageRepository.GetConnection(connectionId);
+
+            _messageRepository.RemoveConnection(connection);
+
+            await _messageRepository.SaveAllAsync();
         }
 
         private string GetGroupName(string caller, string other) {
