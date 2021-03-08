@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 import { Message } from '../models/message';
 import { PaginatedResult } from '../models/pagination';
 import { User } from '../models/user';
+import { Group } from '../models/group';
 
 // Helpers
 import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
@@ -44,6 +45,20 @@ export class MessageService {
       this.messageThread$.pipe(take(1)).subscribe((messages) => {
         this.messageThreadSource.next([...messages, message]);
       });
+    });
+
+    this.hubConnection.on('UpdatedGroup', (group: Group) => {
+      if (group.connections.some((c) => c.username === otherUsername)) {
+        this.messageThread$.pipe(take(1)).subscribe((messages) => {
+          messages.forEach((message) => {
+            if (!message.dateRead) {
+              message.dateRead = new Date(Date.now());
+            }
+          });
+
+          this.messageThreadSource.next([...messages]);
+        });
+      }
     });
   }
 

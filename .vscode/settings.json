@@ -1,6 +1,5 @@
 {
   "editor.formatOnSave": true,
-  "editor.detectIndentation": false,
   "files.exclude": {
     "**/node_modules/": true,
     "**/dist": true,
