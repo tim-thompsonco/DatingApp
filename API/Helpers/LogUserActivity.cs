@@ -14,13 +14,13 @@ namespace API.Helpers {
                 return;
             }
 
-            IUserRepository repo = resultContext.HttpContext.RequestServices.GetService<IUserRepository>();
+            IUnitOfWork uow = resultContext.HttpContext.RequestServices.GetService<IUnitOfWork>();
 
             int userId = resultContext.HttpContext.User.GetUserId();
-            Entities.AppUser user = await repo.GetUserByIdAsync(userId);
-            user.LastActive = DateTime.Now;
+            Entities.AppUser user = await uow.UserRepository.GetUserByIdAsync(userId);
+            user.LastActive = DateTime.UtcNow;
 
-            await repo.SaveAllAsync();
+            await uow.Complete();
         }
     }
 }
