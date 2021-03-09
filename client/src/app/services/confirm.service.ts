@@ -16,7 +16,7 @@ export class ConfirmService {
 
   confirm(
     title = 'Confirmation',
-    message: 'Are you sure',
+    message = 'Are you sure?',
     btnOkText = 'Ok',
     btnCancelText = 'Cancel'
   ): Observable<boolean> {
