@@ -43846,106 +43846,139 @@
         })();
       const ZE = qn(WE);
       let QE = (() => {
-        class t {
-          constructor(t) {
-            (this.http = t),
-              (this.baseUrl = xu),
-              (this.hubUrl = Ou),
-              (this.messageThreadSource = new N_([])),
-              (this.messageThread$ = this.messageThreadSource.asObservable());
-          }
-          createHubConnection(t, e) {
-            (this.hubConnection = new iO()
-              .withUrl(`${this.hubUrl}message?user=${e}`, {
-                accessTokenFactory: () => t.token,
-              })
-              .withAutomaticReconnect()
-              .build()),
-              this.hubConnection.start().catch((t) => console.log(t)),
-              this.hubConnection.on("ReceiveMessageThread", (t) => {
-                this.messageThreadSource.next(t);
-              }),
-              this.hubConnection.on("NewMessage", (t) => {
-                this.messageThread$.pipe(db(1)).subscribe((e) => {
-                  this.messageThreadSource.next([...e, t]);
+          class t {
+            constructor(t) {
+              (this.spinnerService = t), (this.busyRequestCount = 0);
+            }
+            busy() {
+              this.busyRequestCount++,
+                this.spinnerService.show(void 0, {
+                  type: "line-scale-party",
+                  bdColor: "rgba(255,255,255,0)",
+                  color: "#333333",
                 });
-              }),
-              this.hubConnection.on("UpdatedGroup", (t) => {
-                t.connections.some((t) => t.username === e) &&
-                  this.messageThread$.pipe(db(1)).subscribe((t) => {
-                    t.forEach((t) => {
-                      t.dateRead || (t.dateRead = new Date(Date.now()));
-                    }),
-                      this.messageThreadSource.next([...t]);
+            }
+            idle() {
+              this.busyRequestCount--,
+                this.busyRequestCount <= 0 &&
+                  ((this.busyRequestCount = 0), this.spinnerService.hide());
+            }
+          }
+          return (
+            (t.ɵfac = function (e) {
+              return new (e || t)(hi(W_));
+            }),
+            (t.ɵprov = at({ token: t, factory: t.ɵfac, providedIn: "root" })),
+            t
+          );
+        })(),
+        KE = (() => {
+          class t {
+            constructor(t, e) {
+              (this.http = t),
+                (this.busyService = e),
+                (this.baseUrl = xu),
+                (this.hubUrl = Ou),
+                (this.messageThreadSource = new N_([])),
+                (this.messageThread$ = this.messageThreadSource.asObservable());
+            }
+            createHubConnection(t, e) {
+              this.busyService.busy(),
+                (this.hubConnection = new iO()
+                  .withUrl(`${this.hubUrl}message?user=${e}`, {
+                    accessTokenFactory: () => t.token,
+                  })
+                  .withAutomaticReconnect()
+                  .build()),
+                this.hubConnection
+                  .start()
+                  .catch((t) => console.log(t))
+                  .finally(() => this.busyService.idle()),
+                this.hubConnection.on("ReceiveMessageThread", (t) => {
+                  this.messageThreadSource.next(t);
+                }),
+                this.hubConnection.on("NewMessage", (t) => {
+                  this.messageThread$.pipe(db(1)).subscribe((e) => {
+                    this.messageThreadSource.next([...e, t]);
                   });
-              });
-          }
-          stopHubConnection() {
-            this.hubConnection && this.hubConnection.stop();
-          }
-          getMessages(t, e, n) {
-            let i = mT(t, e);
-            return (
-              (i = i.append("Container", n)),
-              fT(this.baseUrl + "messages", i, this.http)
-            );
-          }
-          getMessageThread(t) {
-            return this.http.get(`${this.baseUrl}messages/thread/${t}`);
-          }
-          sendMessage(t, e) {
-            return (
-              (n = this),
-              void 0,
-              (s = function* () {
-                return this.hubConnection
-                  .invoke("SendMessage", { recipientUsername: t, content: e })
-                  .catch((t) => console.log(t));
-              }),
-              new ((i = void 0) || (i = Promise))(function (t, e) {
-                function r(t) {
-                  try {
-                    a(s.next(t));
-                  } catch (n) {
-                    e(n);
+                }),
+                this.hubConnection.on("UpdatedGroup", (t) => {
+                  t.connections.some((t) => t.username === e) &&
+                    this.messageThread$.pipe(db(1)).subscribe((t) => {
+                      t.forEach((t) => {
+                        t.dateRead || (t.dateRead = new Date(Date.now()));
+                      }),
+                        this.messageThreadSource.next([...t]);
+                    });
+                });
+            }
+            stopHubConnection() {
+              this.hubConnection &&
+                (this.messageThreadSource.next([]), this.hubConnection.stop());
+            }
+            getMessages(t, e, n) {
+              let i = mT(t, e);
+              return (
+                (i = i.append("Container", n)),
+                fT(this.baseUrl + "messages", i, this.http)
+              );
+            }
+            getMessageThread(t) {
+              return this.http.get(`${this.baseUrl}messages/thread/${t}`);
+            }
+            sendMessage(t, e) {
+              return (
+                (n = this),
+                void 0,
+                (s = function* () {
+                  return this.hubConnection
+                    .invoke("SendMessage", { recipientUsername: t, content: e })
+                    .catch((t) => console.log(t));
+                }),
+                new ((i = void 0) || (i = Promise))(function (t, e) {
+                  function r(t) {
+                    try {
+                      a(s.next(t));
+                    } catch (n) {
+                      e(n);
+                    }
                   }
-                }
-                function o(t) {
-                  try {
-                    a(s.throw(t));
-                  } catch (n) {
-                    e(n);
+                  function o(t) {
+                    try {
+                      a(s.throw(t));
+                    } catch (n) {
+                      e(n);
+                    }
                   }
-                }
-                function a(e) {
-                  var n;
-                  e.done
-                    ? t(e.value)
-                    : ((n = e.value),
-                      n instanceof i
-                        ? n
-                        : new i(function (t) {
-                            t(n);
-                          })).then(r, o);
-                }
-                a((s = s.apply(n, [])).next());
-              })
-            );
-            var n, i, s;
+                  function a(e) {
+                    var n;
+                    e.done
+                      ? t(e.value)
+                      : ((n = e.value),
+                        n instanceof i
+                          ? n
+                          : new i(function (t) {
+                              t(n);
+                            })).then(r, o);
+                  }
+                  a((s = s.apply(n, [])).next());
+                })
+              );
+              var n, i, s;
+            }
+            deleteMessage(t) {
+              return this.http.delete(`${this.baseUrl}messages/${t}`);
+            }
           }
-          deleteMessage(t) {
-            return this.http.delete(`${this.baseUrl}messages/${t}`);
-          }
-        }
-        return (
-          (t.ɵfac = function (e) {
-            return new (e || t)(hi(tp));
-          }),
-          (t.ɵprov = at({ token: t, factory: t.ɵfac, providedIn: "root" })),
-          t
-        );
-      })();
-      function KE(t, e) {
+          return (
+            (t.ɵfac = function (e) {
+              return new (e || t)(hi(tp), hi(QE));
+            }),
+            (t.ɵprov = at({ token: t, factory: t.ɵfac, providedIn: "root" })),
+            t
+          );
+        })();
+      function XE(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "span", 7),
@@ -43959,10 +43992,10 @@
             Fo();
         }
       }
-      const XE = function (t) {
+      const JE = function (t) {
         return ["nav-item", t];
       };
-      function JE(t, e) {
+      function tA(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "li", 3),
@@ -43978,14 +44011,14 @@
             Io(2, "span", 5),
             ya(3),
             Fo(),
-            So(4, KE, 2, 0, "span", 6),
+            So(4, XE, 2, 0, "span", 6),
             Fo(),
             Fo();
         }
         if (2 & t) {
           const t = e.$implicit;
           oa("active", t.active)("disabled", t.disabled),
-            Eo("ngClass", Zl(15, XE, t.customClass || "")),
+            Eo("ngClass", Zl(15, JE, t.customClass || "")),
             Qs(1),
             oa("active", t.active)("disabled", t.disabled),
             ko("aria-controls", t.id ? t.id : "")("aria-selected", !!t.active)(
@@ -44000,8 +44033,8 @@
             Eo("ngIf", t.removable);
         }
       }
-      const tA = ["*"];
-      let eA = (() => {
+      const eA = ["*"];
+      let nA = (() => {
           class t {
             constructor(t) {
               this.viewRef = t;
@@ -44025,7 +44058,7 @@
             t
           );
         })(),
-        nA = (() => {
+        iA = (() => {
           class t {
             constructor() {
               (this.type = "tabs"),
@@ -44047,7 +44080,7 @@
             t
           );
         })(),
-        iA = (() => {
+        sA = (() => {
           class t {
             constructor(t, e, n) {
               (this.renderer = e),
@@ -44200,7 +44233,7 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(To(nA), To(Xa), To(Za));
+              return new (e || t)(To(iA), To(Xa), To(Za));
             }),
             (t.ɵcmp = jt({
               type: t,
@@ -44214,7 +44247,7 @@
                 justified: "justified",
                 type: "type",
               },
-              ngContentSelectors: tA,
+              ngContentSelectors: eA,
               decls: 4,
               vars: 3,
               consts: [
@@ -44252,7 +44285,7 @@
                   Bo("click", function (t) {
                     return t.preventDefault();
                   }),
-                  So(1, JE, 5, 17, "li", 1),
+                  So(1, tA, 5, 17, "li", 1),
                   Fo(),
                   Io(2, "div", 2),
                   Zo(3),
@@ -44263,7 +44296,7 @@
                     Qs(1),
                     Eo("ngForOf", e.tabs));
               },
-              directives: [Dh, Eh, eA, Ih],
+              directives: [Dh, Eh, nA, Ih],
               styles: [
                 "[_nghost-%COMP%]   .nav-tabs[_ngcontent-%COMP%]   .nav-item.disabled[_ngcontent-%COMP%]   a.disabled[_ngcontent-%COMP%]{cursor:default}",
               ],
@@ -44271,7 +44304,7 @@
             t
           );
         })(),
-        sA = (() => {
+        rA = (() => {
           class t {
             constructor(t, e, n) {
               (this.elementRef = e),
@@ -44325,7 +44358,7 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(To(iA), To(Za), To(Xa));
+              return new (e || t)(To(sA), To(Za), To(Xa));
             }),
             (t.ɵdir = qt({
               type: t,
@@ -44357,7 +44390,7 @@
             t
           );
         })(),
-        rA = (() => {
+        oA = (() => {
           class t {
             static forRoot() {
               return { ngModule: t, providers: [] };
@@ -44374,17 +44407,17 @@
             t
           );
         })();
-      class oA {
+      class aA {
         constructor(t, e, n) {
           (this.project = t), (this.concurrent = e), (this.scheduler = n);
         }
         call(t, e) {
           return e.subscribe(
-            new aA(t, this.project, this.concurrent, this.scheduler)
+            new lA(t, this.project, this.concurrent, this.scheduler)
           );
         }
       }
-      class aA extends j {
+      class lA extends j {
         constructor(t, e, n, i) {
           super(t),
             (this.project = e),
@@ -44410,7 +44443,7 @@
                 i = e(t, n);
               this.scheduler
                 ? this.destination.add(
-                    this.scheduler.schedule(aA.dispatch, 0, {
+                    this.scheduler.schedule(lA.dispatch, 0, {
                       subscriber: this,
                       result: i,
                       value: t,
@@ -44445,15 +44478,15 @@
               this.destination.complete();
         }
       }
-      class lA {
+      class cA {
         constructor(t) {
           this.total = t;
         }
         call(t, e) {
-          return e.subscribe(new cA(t, this.total));
+          return e.subscribe(new uA(t, this.total));
         }
       }
-      class cA extends g {
+      class uA extends g {
         constructor(t, e) {
           super(t), (this.total = e), (this.count = 0);
         }
@@ -44461,41 +44494,41 @@
           ++this.count > this.total && this.destination.next(t);
         }
       }
-      const uA = 3600,
-        hA = 86400,
-        dA = 7 * hA,
-        pA = 30 * hA,
-        gA = 365 * hA;
-      class fA {}
-      let mA = (() => {
-        class t extends fA {
+      const hA = 3600,
+        dA = 86400,
+        pA = 7 * dA,
+        gA = 30 * dA,
+        fA = 365 * dA;
+      class mA {}
+      let _A = (() => {
+        class t extends mA {
           tick(t) {
             return Id(0).pipe(
               (function (t, e = Number.POSITIVE_INFINITY, n) {
                 return (
                   (e = (e || 0) < 1 ? Number.POSITIVE_INFINITY : e),
-                  (i) => i.lift(new oA(t, e, n))
+                  (i) => i.lift(new aA(t, e, n))
                 );
               })(() => {
                 const e = Date.now(),
                   n = Math.round(Math.abs(e - t) / 1e3),
-                  i = n < 60 ? 1e3 : n < uA ? 6e4 : n < hA ? 36e5 : 0;
+                  i = n < 60 ? 1e3 : n < hA ? 6e4 : n < dA ? 36e5 : 0;
                 return i ? TP(i) : ob();
               }),
-              (t) => t.lift(new lA(1))
+              (t) => t.lift(new cA(1))
             );
           }
         }
         return (
           (t.ɵfac = function (e) {
-            return _A(e || t);
+            return bA(e || t);
           }),
           (t.ɵprov = at({ token: t, factory: t.ɵfac })),
           t
         );
       })();
-      const _A = qn(mA);
-      let bA = (() => {
+      const bA = qn(_A);
+      let yA = (() => {
         class t {
           constructor() {
             this.changes = new x();
@@ -44509,9 +44542,9 @@
           t
         );
       })();
-      class yA {}
-      let vA = (() => {
-        class t extends yA {
+      class vA {}
+      let wA = (() => {
+        class t extends vA {
           format(t) {
             const { suffix: e, value: n, unit: i } = (function (t) {
               const e = Date.now(),
@@ -44520,17 +44553,17 @@
                 [s, r] =
                   n < 60
                     ? [Math.round(n), "second"]
-                    : n < uA
-                    ? [Math.round(n / 60), "minute"]
                     : n < hA
-                    ? [Math.round(n / uA), "hour"]
+                    ? [Math.round(n / 60), "minute"]
                     : n < dA
-                    ? [Math.round(n / hA), "day"]
+                    ? [Math.round(n / hA), "hour"]
                     : n < pA
-                    ? [Math.round(n / dA), "week"]
+                    ? [Math.round(n / dA), "day"]
                     : n < gA
-                    ? [Math.round(n / pA), "month"]
-                    : [Math.round(n / gA), "year"];
+                    ? [Math.round(n / pA), "week"]
+                    : n < fA
+                    ? [Math.round(n / gA), "month"]
+                    : [Math.round(n / fA), "year"];
               return { value: s, unit: r, suffix: i };
             })(t);
             return this.parse(n, i, e);
@@ -44541,14 +44574,14 @@
         }
         return (
           (t.ɵfac = function (e) {
-            return wA(e || t);
+            return CA(e || t);
           }),
           (t.ɵprov = at({ token: t, factory: t.ɵfac })),
           t
         );
       })();
-      const wA = qn(vA);
-      let CA = (() => {
+      const CA = qn(wA);
+      let xA = (() => {
           class t {
             constructor(t, e, n, i) {
               (this.clock = i),
@@ -44612,22 +44645,22 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(To(bA, 8), Oc(), To(yA), To(fA));
+              return new (e || t)(To(yA, 8), Oc(), To(vA), To(mA));
             }),
             (t.ɵpipe = $t({ name: "timeago", type: t, pure: !1 })),
             (t.ɵprov = at({ token: t, factory: t.ɵfac })),
             t
           );
         })(),
-        xA = (() => {
+        OA = (() => {
           class t {
             static forRoot(e = {}) {
               return {
                 ngModule: t,
                 providers: [
-                  e.clock || { provide: fA, useClass: mA },
+                  e.clock || { provide: mA, useClass: _A },
                   e.intl || [],
-                  e.formatter || { provide: yA, useClass: vA },
+                  e.formatter || { provide: vA, useClass: wA },
                 ],
               };
             }
@@ -44635,9 +44668,9 @@
               return {
                 ngModule: t,
                 providers: [
-                  e.clock || { provide: fA, useClass: mA },
+                  e.clock || { provide: mA, useClass: _A },
                   e.intl || [],
-                  e.formatter || { provide: yA, useClass: vA },
+                  e.formatter || { provide: vA, useClass: wA },
                 ],
               };
             }
@@ -44652,41 +44685,41 @@
             t
           );
         })();
-      const OA = ["messageForm"];
-      function kA(t, e) {
+      const kA = ["messageForm"];
+      function MA(t, e) {
         1 & t &&
           (Io(0, "div"),
           ya(1, " No messages yet... say hi by using the message box below "),
           Fo());
       }
-      function MA(t, e) {
-        1 & t && (Io(0, "span", 22), ya(1, " (unread) "), Fo());
-      }
       function PA(t, e) {
+        1 & t && (Io(0, "span", 23), ya(1, " (unread) "), Fo());
+      }
+      function SA(t, e) {
         if (
-          (1 & t && (Io(0, "span", 23), ya(1), ec(2, "timeago"), Fo()), 2 & t)
+          (1 & t && (Io(0, "span", 24), ya(1), ec(2, "timeago"), Fo()), 2 & t)
         ) {
           const t = Yo().$implicit;
           Qs(1), wa(" (read ", nc(2, 1, t.dateRead), ") ");
         }
       }
-      function SA(t, e) {
+      function DA(t, e) {
         if (
           (1 & t &&
             (Io(0, "li"),
             Io(1, "div"),
-            Io(2, "span", 14),
-            Ro(3, "img", 15),
+            Io(2, "span", 15),
+            Ro(3, "img", 16),
             Fo(),
-            Io(4, "div", 16),
-            Io(5, "div", 17),
-            Io(6, "small", 18),
-            Io(7, "span", 19),
+            Io(4, "div", 17),
+            Io(5, "div", 18),
+            Io(6, "small", 19),
+            Io(7, "span", 20),
             ya(8),
             ec(9, "timeago"),
             Fo(),
-            So(10, MA, 2, 0, "span", 20),
-            So(11, PA, 3, 3, "span", 21),
+            So(10, PA, 2, 0, "span", 21),
+            So(11, SA, 3, 3, "span", 22),
             Fo(),
             Fo(),
             Io(12, "p"),
@@ -44712,66 +44745,67 @@
             va(t.content);
         }
       }
-      function DA(t, e) {
+      function TA(t, e) {
         if (
           (1 & t &&
-            (Io(0, "ul", 11, 12),
-            So(2, SA, 14, 8, "li", 13),
-            ec(3, "async"),
-            Fo()),
+            (Io(0, "ul", 13), So(1, DA, 14, 8, "li", 14), ec(2, "async"), Fo()),
           2 & t)
         ) {
-          const t = Do(1),
-            e = Yo();
-          Eo("scrollTop", t.scrollHeight),
-            Qs(2),
-            Eo("ngForOf", nc(3, 2, e.messageService.messageThread$));
+          const t = Yo();
+          Qs(1), Eo("ngForOf", nc(2, 1, t.messageService.messageThread$));
         }
       }
-      let TA = (() => {
+      function EA(t, e) {
+        1 & t && Ro(0, "i", 25);
+      }
+      let AA = (() => {
         class t {
           constructor(t) {
-            this.messageService = t;
+            (this.messageService = t), (this.loading = !1);
           }
           ngOnInit() {}
           sendMessage() {
-            this.messageService
-              .sendMessage(this.username, this.messageContent)
-              .then(() => {
-                this.messageForm.reset();
-              });
+            (this.loading = !0),
+              this.messageService
+                .sendMessage(this.username, this.messageContent)
+                .then(() => {
+                  this.messageForm.reset();
+                })
+                .finally(() => (this.loading = !1));
           }
         }
         return (
           (t.ɵfac = function (e) {
-            return new (e || t)(To(QE));
+            return new (e || t)(To(KE));
           }),
           (t.ɵcmp = jt({
             type: t,
             selectors: [["app-member-messages"]],
             viewQuery: function (t, e) {
-              if ((1 & t && _c(OA, 1), 2 & t)) {
+              if ((1 & t && _c(kA, 1), 2 & t)) {
                 let t;
                 mc((t = yc())) && (e.messageForm = t.first);
               }
             },
             inputs: { messages: "messages", username: "username" },
-            decls: 14,
-            vars: 8,
+            decls: 16,
+            vars: 10,
             consts: [
               [1, "card"],
-              [1, "card-body"],
-              [4, "ngIf"],
               [
-                "style",
-                "overflow: scroll; height: 500px",
-                "class",
-                "chat",
+                1,
+                "card-body",
+                2,
+                "overflow",
+                "scroll",
+                "height",
+                "535px",
                 3,
                 "scrollTop",
-                4,
-                "ngIf",
               ],
+              ["scrollMe", ""],
+              [4, "ngIf"],
+              ["class", "chat", 4, "ngIf"],
               [1, "card-footer"],
               ["autocomplete", "off", 3, "ngSubmit"],
               ["messageForm", "ngForm"],
@@ -44794,18 +44828,8 @@
               ],
               [1, "input-group-append"],
               ["type", "submit", 1, "btn", "btn-primary", 3, "disabled"],
-              [
-                1,
-                "chat",
-                2,
-                "overflow",
-                "scroll",
-                "height",
-                "500px",
-                3,
-                "scrollTop",
-              ],
-              ["scrollMe", ""],
+              ["class", "fa fa-spinner fa-spin", 4, "ngIf"],
+              [1, "chat"],
               [4, "ngFor", "ngForOf"],
               [1, "chat-img", "float-right"],
               [1, "rounded-circle", 3, "src", "alt"],
@@ -44817,31 +44841,33 @@
               ["class", "text-success", 4, "ngIf"],
               [1, "text-danger"],
               [1, "text-success"],
+              [1, "fa", "fa-spinner", "fa-spin"],
             ],
             template: function (t, e) {
               if (
                 (1 & t &&
                   (Io(0, "div", 0),
-                  Io(1, "div", 1),
-                  So(2, kA, 2, 0, "div", 2),
-                  ec(3, "async"),
-                  So(4, DA, 4, 4, "ul", 3),
-                  ec(5, "async"),
+                  Io(1, "div", 1, 2),
+                  So(3, MA, 2, 0, "div", 3),
+                  ec(4, "async"),
+                  So(5, TA, 3, 3, "ul", 4),
+                  ec(6, "async"),
                   Fo(),
-                  Io(6, "div", 4),
-                  Io(7, "form", 5, 6),
+                  Io(7, "div", 5),
+                  Io(8, "form", 6, 7),
                   Bo("ngSubmit", function () {
                     return e.sendMessage();
                   }),
-                  Io(9, "div", 7),
-                  Io(10, "input", 8),
+                  Io(10, "div", 8),
+                  Io(11, "input", 9),
                   Bo("ngModelChange", function (t) {
                     return (e.messageContent = t);
                   }),
                   Fo(),
-                  Io(11, "div", 9),
-                  Io(12, "button", 10),
-                  ya(13, " Send "),
+                  Io(12, "div", 10),
+                  Io(13, "button", 11),
+                  So(14, EA, 1, 0, "i", 12),
+                  ya(15, " Send "),
                   Fo(),
                   Fo(),
                   Fo(),
@@ -44850,29 +44876,34 @@
                   Fo()),
                 2 & t)
               ) {
-                const t = Do(8);
-                let n = null;
-                Qs(2),
+                const t = Do(2),
+                  n = Do(9);
+                let i = null;
+                Qs(1),
+                  Eo("scrollTop", t.scrollHeight),
+                  Qs(2),
                   Eo(
                     "ngIf",
                     0 ===
-                      (null == (n = nc(3, 4, e.messageService.messageThread$))
+                      (null == (i = nc(4, 6, e.messageService.messageThread$))
                         ? null
-                        : n.length)
+                        : i.length)
                   ),
                   Qs(2),
                   Eo(
                     "ngIf",
-                    nc(5, 6, e.messageService.messageThread$).length > 0
+                    nc(6, 8, e.messageService.messageThread$).length > 0
                   ),
                   Qs(6),
                   Eo("ngModel", e.messageContent),
                   Qs(2),
-                  Eo("disabled", !t.valid);
+                  Eo("disabled", !n.valid || e.loading),
+                  Qs(1),
+                  Eo("ngIf", e.loading);
               }
             },
             directives: [Ih, C_, Sm, b_, rm, E_, Pm, w_, Eh],
-            pipes: [Yh, CA],
+            pipes: [Yh, xA],
             styles: [
               ".card[_ngcontent-%COMP%]{border:none}.chat[_ngcontent-%COMP%]{list-style:none;margin:0;padding:0}.chat[_ngcontent-%COMP%]   li[_ngcontent-%COMP%]{margin-bottom:10px;padding-bottom:10px;border-bottom:1px dotted #b3a9a9}.rounded-circle[_ngcontent-%COMP%]{max-height:50px}",
             ],
@@ -44881,12 +44912,12 @@
           t
         );
       })();
-      const EA = ["memberTabs"];
-      function AA(t, e) {
+      const IA = ["memberTabs"];
+      function FA(t, e) {
         1 & t &&
           (Io(0, "div", 19), Ro(1, "i", 20), ya(2, " Online now "), Fo());
       }
-      let IA = (() => {
+      let RA = (() => {
         class t {
           constructor(t, e, n, i, s) {
             (this.presence = t),
@@ -44955,13 +44986,13 @@
         }
         return (
           (t.ɵfac = function (e) {
-            return new (e || t)(To(kO), To(QE), To(zy), To(MO), To(ew));
+            return new (e || t)(To(kO), To(KE), To(zy), To(MO), To(ew));
           }),
           (t.ɵcmp = jt({
             type: t,
             selectors: [["app-member-detail"]],
             viewQuery: function (t, e) {
-              if ((1 & t && _c(EA, 3), 2 & t)) {
+              if ((1 & t && _c(IA, 3), 2 & t)) {
                 let t;
                 mc((t = yc())) && (e.memberTabs = t.first);
               }
@@ -44998,7 +45029,7 @@
                 Io(2, "div", 2),
                 Ro(3, "img", 3),
                 Io(4, "div", 4),
-                So(5, AA, 3, 0, "div", 5),
+                So(5, FA, 3, 0, "div", 5),
                 ec(6, "async"),
                 Io(7, "div"),
                 Io(8, "strong"),
@@ -45127,8 +45158,8 @@
                   Qs(2),
                   Eo("username", e.member.username));
             },
-            directives: [Ih, iA, sA, BE, TA],
-            pipes: [Yh, CA, Zh],
+            directives: [Ih, sA, rA, BE, AA],
+            pipes: [Yh, xA, Zh],
             styles: [
               ".img-thumbnail[_ngcontent-%COMP%]{margin:25px;width:85%;height:85%}.card-body[_ngcontent-%COMP%]{padding:0 25px}.card-footer[_ngcontent-%COMP%]{padding:10px 15px;background-color:#fff;border-top:none}.ngx-gallery[_ngcontent-%COMP%]{display:inline-block;margin-bottom:20px}",
             ],
@@ -45136,13 +45167,13 @@
           t
         );
       })();
-      function FA(t, e) {
+      function NA(t, e) {
         if ((1 & t && (Io(0, "option", 19), ya(1), Fo()), 2 & t)) {
           const t = e.$implicit;
           Eo("value", t.value), Qs(1), wa(" ", t.display, " ");
         }
       }
-      function RA(t, e) {
+      function LA(t, e) {
         if (
           (1 & t && (Io(0, "div", 20), Ro(1, "app-member-card", 21), Fo()),
           2 & t)
@@ -45151,7 +45182,7 @@
           Qs(1), Eo("member", t);
         }
       }
-      function NA(t, e) {
+      function jA(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "div", 22),
@@ -45173,7 +45204,7 @@
             )("ngModel", t.pagination.currentPage);
         }
       }
-      let LA = (() => {
+      let HA = (() => {
         class t {
           constructor(t) {
             (this.memberService = t),
@@ -45361,7 +45392,7 @@
                 Bo("ngModelChange", function (t) {
                   return (e.userParams.gender = t);
                 }),
-                So(18, FA, 2, 2, "option", 9),
+                So(18, NA, 2, 2, "option", 9),
                 Fo(),
                 Fo(),
                 Io(19, "button", 10),
@@ -45396,9 +45427,9 @@
                 Fo(),
                 Fo(),
                 Io(29, "div", 16),
-                So(30, RA, 2, 1, "div", 17),
+                So(30, LA, 2, 1, "div", 17),
                 Fo(),
-                So(31, NA, 2, 4, "div", 18)),
+                So(31, jA, 2, 4, "div", 18)),
                 2 & t &&
                   (Qs(2),
                   wa(
@@ -45445,11 +45476,11 @@
           t
         );
       })();
-      function jA(t, e) {
+      function zA(t, e) {
         1 & t &&
           (Io(0, "div", 10), Io(1, "h3"), ya(2, "No messages"), Fo(), Fo());
       }
-      function HA(t, e) {
+      function VA(t, e) {
         if (
           (1 & t &&
             (Io(0, "div"),
@@ -45469,7 +45500,7 @@
             va(nc(4, 3, t.recipientUsername));
         }
       }
-      function zA(t, e) {
+      function UA(t, e) {
         if (
           (1 & t &&
             (Io(0, "div"),
@@ -45489,16 +45520,16 @@
             va(nc(4, 3, t.senderUsername));
         }
       }
-      const VA = function () {
+      const BA = function () {
         return { tab: 3 };
       };
-      function UA(t, e) {
+      function qA(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "tr", 15),
             Io(1, "td"),
-            So(2, HA, 5, 5, "div", 16),
-            So(3, zA, 5, 5, "div", 16),
+            So(2, VA, 5, 5, "div", 16),
+            So(3, UA, 5, 5, "div", 16),
             Fo(),
             Io(4, "td"),
             ya(5),
@@ -45530,7 +45561,7 @@
               ? "/members/" + t.recipientUsername
               : "/members/" + t.senderUsername
           ),
-            Eo("hidden", n.loading)("queryParams", Gl(9, VA)),
+            Eo("hidden", n.loading)("queryParams", Gl(9, BA)),
             Qs(2),
             Eo("ngIf", "Outbox" === n.container),
             Qs(1),
@@ -45541,7 +45572,7 @@
             va(nc(8, 7, t.messageSent));
         }
       }
-      function BA(t, e) {
+      function $A(t, e) {
         if (
           (1 & t &&
             (Io(0, "div", 10),
@@ -45558,7 +45589,7 @@
             Fo(),
             Ro(9, "th", 12),
             Fo(),
-            So(10, UA, 12, 10, "tr", 14),
+            So(10, qA, 12, 10, "tr", 14),
             Fo(),
             Fo()),
           2 & t)
@@ -45567,7 +45598,7 @@
           Qs(10), Eo("ngForOf", t.messages);
         }
       }
-      function qA(t, e) {
+      function YA(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "div", 19),
@@ -45589,7 +45620,7 @@
             )("ngModel", t.pagination.currentPage);
         }
       }
-      let $A = (() => {
+      let WA = (() => {
           class t {
             constructor(t, e) {
               (this.messageService = t),
@@ -45631,7 +45662,7 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(To(QE), To(LC));
+              return new (e || t)(To(KE), To(LC));
             }),
             (t.ɵcmp = jt({
               type: t,
@@ -45748,9 +45779,9 @@
                   Fo(),
                   Fo(),
                   Fo(),
-                  So(11, jA, 3, 0, "div", 8),
-                  So(12, BA, 11, 1, "div", 8),
-                  So(13, qA, 2, 4, "div", 9)),
+                  So(11, zA, 3, 0, "div", 8),
+                  So(12, $A, 11, 1, "div", 8),
+                  So(13, YA, 2, 4, "div", 9)),
                   2 & t &&
                     (Qs(2),
                     Eo("ngModel", e.container),
@@ -45772,13 +45803,13 @@
                     Eo("ngIf", e.pagination && !e.loading));
               },
               directives: [wT, Pm, w_, Ih, Eh, nw, $T],
-              pipes: [CA, Gh],
+              pipes: [xA, Gh],
               styles: [".img-circle[_ngcontent-%COMP%]{max-height:50px}"],
             })),
             t
           );
         })(),
-        YA = (() => {
+        GA = (() => {
           class t {
             constructor() {}
             ngOnInit() {}
@@ -45813,7 +45844,7 @@
             t
           );
         })();
-      function WA(t, e) {
+      function ZA(t, e) {
         if (
           (1 & t &&
             (No(0),
@@ -45830,7 +45861,7 @@
           Qs(2), wa("Error: ", t.error.message, ""), Qs(2), va(t.error.details);
         }
       }
-      let GA = (() => {
+      let QA = (() => {
         class t {
           constructor(t) {
             var e, n;
@@ -45869,7 +45900,7 @@
                   " Internal Server Error - refreshing the page will make the error disappear!\n"
                 ),
                 Fo(),
-                So(2, WA, 5, 2, "ng-container", 0)),
+                So(2, ZA, 5, 2, "ng-container", 0)),
                 2 & t && (Qs(2), Eo("ngIf", e.error));
             },
             directives: [Ih],
@@ -45878,7 +45909,7 @@
           t
         );
       })();
-      class ZA {
+      class KA {
         constructor(t) {
           var e;
           this.rawFile = t;
@@ -45901,7 +45932,7 @@
           (this.size = t.size), (this.type = t.type), (this.name = t.name);
         }
       }
-      class QA {
+      class XA {
         constructor(t, e, n) {
           (this.url = "/"),
             (this.headers = []),
@@ -45918,7 +45949,7 @@
             (this.uploader = t),
             (this.some = e),
             (this.options = n),
-            (this.file = new ZA(e)),
+            (this.file = new KA(e)),
             (this._file = e),
             t.options &&
               ((this.method = t.options.method || "POST"),
@@ -46016,7 +46047,7 @@
             (this.isReady = !0);
         }
       }
-      let KA = (() => {
+      let JA = (() => {
         class t {
           static getMimeClass(t) {
             let e = "application";
@@ -46164,7 +46195,7 @@
           t
         );
       })();
-      class XA {
+      class tI {
         constructor(t) {
           (this.isUploading = !1),
             (this.queue = []),
@@ -46218,9 +46249,9 @@
             o = [];
           i.map((t) => {
             e || (e = this.options);
-            let n = new ZA(t);
+            let n = new KA(t);
             if (this._isValidFile(n, s, e)) {
-              let n = new QA(this, t, e);
+              let n = new XA(this, t, e);
               o.push(n), this.queue.push(n), this._onAfterAddingFile(n);
             } else this._onWhenAddingFileFailed(n, s[this._failFilterIndex], e);
           }),
@@ -46268,7 +46299,7 @@
           })(t);
         }
         isFileLikeObject(t) {
-          return t instanceof ZA;
+          return t instanceof KA;
         }
         getIndexOfItem(t) {
           return "number" == typeof t ? t : this.queue.indexOf(t);
@@ -46330,7 +46361,7 @@
         _fileTypeFilter(t) {
           return !(
             this.options.allowedFileType &&
-            -1 === this.options.allowedFileType.indexOf(KA.getMimeClass(t))
+            -1 === this.options.allowedFileType.indexOf(JA.getMimeClass(t))
           );
         }
         _onErrorItem(t, e, n, i) {
@@ -46501,7 +46532,7 @@
           t._onCancel(e, n, i), this.onCancelItem(t, e, n, i);
         }
       }
-      let JA = (() => {
+      let eI = (() => {
           class t {
             constructor(t) {
               (this.onFileSelected = new rc()), (this.element = t);
@@ -46544,7 +46575,7 @@
             t
           );
         })(),
-        tI = (() => {
+        nI = (() => {
           class t {
             constructor(t) {
               (this.fileOver = new rc()),
@@ -46618,7 +46649,7 @@
             t
           );
         })(),
-        eI = (() => {
+        iI = (() => {
           class t {}
           return (
             (t.ɵmod = Ut({ type: t })),
@@ -46631,7 +46662,7 @@
             t
           );
         })();
-      function nI(t, e) {
+      function sI(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "div", 9),
@@ -46670,7 +46701,7 @@
             Eo("disabled", t.isMain);
         }
       }
-      function iI(t, e) {
+      function rI(t, e) {
         if ((1 & t && (Io(0, "td", 27), ya(1), ec(2, "number"), Fo()), 2 & t)) {
           const t = Yo().$implicit;
           Qs(1),
@@ -46694,7 +46725,7 @@
             );
         }
       }
-      function sI(t, e) {
+      function oI(t, e) {
         if (
           (1 & t &&
             (Io(0, "tr"),
@@ -46703,7 +46734,7 @@
             ya(3),
             Fo(),
             Fo(),
-            So(4, iI, 3, 4, "td", 26),
+            So(4, rI, 3, 4, "td", 26),
             Fo()),
           2 & t)
         ) {
@@ -46715,10 +46746,10 @@
             Eo("ngIf", n.uploader.options.isHTML5);
         }
       }
-      const rI = function (t) {
+      const aI = function (t) {
         return { width: t };
       };
-      function oI(t, e) {
+      function lI(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "div", 15),
@@ -46740,7 +46771,7 @@
             Fo(),
             Fo(),
             Io(12, "tbody"),
-            So(13, sI, 5, 2, "tr", 18),
+            So(13, oI, 5, 2, "tr", 18),
             Fo(),
             Fo(),
             Io(14, "div"),
@@ -46787,7 +46818,7 @@
             Qs(9),
             Eo("ngForOf", t.uploader.queue),
             Qs(5),
-            Eo("ngStyle", Zl(6, rI, t.uploader.progress + "%")),
+            Eo("ngStyle", Zl(6, aI, t.uploader.progress + "%")),
             Qs(1),
             Eo("disabled", !t.uploader.getNotUploadedItems().length),
             Qs(3),
@@ -46796,10 +46827,10 @@
             Eo("disabled", !t.uploader.queue.length);
         }
       }
-      const aI = function (t) {
+      const cI = function (t) {
         return { "nv-file-over": t };
       };
-      let lI = (() => {
+      let uI = (() => {
         class t {
           constructor(t, e) {
             (this.accountService = t),
@@ -46832,7 +46863,7 @@
             });
           }
           initializeUploader() {
-            (this.uploader = new XA({
+            (this.uploader = new tI({
               url: this.baseUrl + "users/add-photo",
               authToken: "Bearer " + this.user.token,
               isHTML5: !0,
@@ -46952,7 +46983,7 @@
             template: function (t, e) {
               1 & t &&
                 (Io(0, "div", 0),
-                So(1, nI, 7, 5, "div", 1),
+                So(1, sI, 7, 5, "div", 1),
                 Fo(),
                 Io(2, "div", 2),
                 Io(3, "div", 3),
@@ -46972,13 +47003,13 @@
                 ya(12, " Single "),
                 Ro(13, "input", 7),
                 Fo(),
-                So(14, oI, 28, 8, "div", 8),
+                So(14, lI, 28, 8, "div", 8),
                 Fo()),
                 2 & t &&
                   (Qs(1),
                   Eo("ngForOf", e.member.photos),
                   Qs(5),
-                  Eo("ngClass", Zl(6, aI, e.hasBaseDropZoneOver))(
+                  Eo("ngClass", Zl(6, cI, e.hasBaseDropZoneOver))(
                     "uploader",
                     e.uploader
                   ),
@@ -46994,7 +47025,7 @@
                       : e.uploader.queue.length
                   ));
             },
-            directives: [Eh, tI, Dh, JA, Ih, Hh],
+            directives: [Eh, nI, Dh, eI, Ih, Hh],
             pipes: [Qh],
             styles: [
               "img.img-thumbnail[_ngcontent-%COMP%]{height:100px;min-width:100px!important;margin-bottom:2px}.nv-file-over[_ngcontent-%COMP%]{border:3px dotted red}input[type=file][_ngcontent-%COMP%]{color:transparent}",
@@ -47003,8 +47034,8 @@
           t
         );
       })();
-      const cI = ["editForm"];
-      function uI(t, e) {
+      const hI = ["editForm"];
+      function dI(t, e) {
         1 & t &&
           (Io(0, "div", 24),
           Io(1, "strong"),
@@ -47013,7 +47044,7 @@
           ya(3, " You have made changes. Any unsaved changes will be lost. "),
           Fo());
       }
-      function hI(t, e) {
+      function pI(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "div", 1),
@@ -47023,7 +47054,7 @@
             Fo(),
             Fo(),
             Io(4, "div", 3),
-            So(5, uI, 4, 0, "div", 4),
+            So(5, dI, 4, 0, "div", 4),
             Fo(),
             Io(6, "div", 2),
             Io(7, "div", 5),
@@ -47166,7 +47197,7 @@
             Eo("member", e.member);
         }
       }
-      let dI = (() => {
+      let gI = (() => {
           class t {
             constructor(t, e, n) {
               (this.accountService = t),
@@ -47202,7 +47233,7 @@
               type: t,
               selectors: [["app-member-edit"]],
               viewQuery: function (t, e) {
-                if ((1 & t && _c(cI, 1), 2 & t)) {
+                if ((1 & t && _c(hI, 1), 2 & t)) {
                   let t;
                   mc((t = yc())) && (e.editForm = t.first);
                 }
@@ -47309,11 +47340,11 @@
                 [1, "alert", "alert-info"],
               ],
               template: function (t, e) {
-                1 & t && So(0, hI, 60, 20, "div", 0),
+                1 & t && So(0, pI, 60, 20, "div", 0),
                   2 & t && Eo("ngIf", e.member);
               },
-              directives: [Ih, iA, sA, C_, Sm, b_, rm, Pm, w_, lI],
-              pipes: [CA, Zh],
+              directives: [Ih, sA, rA, C_, Sm, b_, rm, Pm, w_, uI],
+              pipes: [xA, Zh],
               styles: [
                 ".img-thumbnail[_ngcontent-%COMP%]{margin:25px;width:85%;height:85%}.card-body[_ngcontent-%COMP%]{padding:0 25px}.card-footer[_ngcontent-%COMP%]{padding:10px 15px;background-color:#fff;border-top:none}",
               ],
@@ -47321,7 +47352,7 @@
             t
           );
         })(),
-        pI = (() => {
+        fI = (() => {
           class t {
             constructor(t) {
               this.memberService = t;
@@ -47338,7 +47369,7 @@
             t
           );
         })(),
-        gI = (() => {
+        mI = (() => {
           class t {
             constructor(t, e, n) {
               (this.viewContainerRef = t),
@@ -47371,7 +47402,7 @@
             t
           );
         })();
-      function fI(t, e) {
+      function _I(t, e) {
         if (
           (1 & t &&
             (Io(0, "div", 11),
@@ -47398,7 +47429,7 @@
             va(t.name);
         }
       }
-      let mI = (() => {
+      let bI = (() => {
           class t {
             constructor(t) {
               (this.bsModalRef = t),
@@ -47473,7 +47504,7 @@
                   Fo(),
                   Io(6, "div", 4),
                   Io(7, "form", 5, 6),
-                  So(9, fI, 4, 3, "div", 7),
+                  So(9, _I, 4, 3, "div", 7),
                   Fo(),
                   Fo(),
                   Io(10, "div", 8),
@@ -47502,7 +47533,7 @@
             t
           );
         })(),
-        _I = (() => {
+        yI = (() => {
           class t {
             constructor(t) {
               (this.http = t), (this.baseUrl = xu);
@@ -47525,7 +47556,7 @@
             t
           );
         })();
-      function bI(t, e) {
+      function vI(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "tr"),
@@ -47552,7 +47583,7 @@
           Qs(2), va(t.userName), Qs(2), va(t.roles);
         }
       }
-      let yI = (() => {
+      let wI = (() => {
           class t {
             constructor(t, e) {
               (this.adminService = t), (this.modalService = e);
@@ -47570,7 +47601,7 @@
                 class: "modal-dialog-centered",
                 initialState: { user: t, roles: this.getRolesArray(t) },
               };
-              (this.bsModalRef = this.modalService.show(mI, e)),
+              (this.bsModalRef = this.modalService.show(bI, e)),
                 this.bsModalRef.content.updateSelectedRoles.subscribe((e) => {
                   const n = {
                     roles: [
@@ -47608,7 +47639,7 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(To(_I), To(FC));
+              return new (e || t)(To(yI), To(FC));
             }),
             (t.ɵcmp = jt({
               type: t,
@@ -47636,7 +47667,7 @@
                   Fo(),
                   Ro(7, "th", 2),
                   Fo(),
-                  So(8, bI, 8, 2, "tr", 4),
+                  So(8, vI, 8, 2, "tr", 4),
                   Fo(),
                   Fo()),
                   2 & t && (Qs(8), Eo("ngForOf", e.users));
@@ -47647,7 +47678,7 @@
             t
           );
         })(),
-        vI = (() => {
+        CI = (() => {
           class t {
             constructor() {}
             ngOnInit() {}
@@ -47669,7 +47700,7 @@
             t
           );
         })();
-      function wI(t, e) {
+      function xI(t, e) {
         1 & t &&
           (Io(0, "tab", 4),
           Io(1, "div", 5),
@@ -47677,7 +47708,7 @@
           Fo(),
           Fo());
       }
-      function CI(t, e) {
+      function OI(t, e) {
         1 & t &&
           (Io(0, "tab", 6),
           Io(1, "div", 5),
@@ -47685,28 +47716,28 @@
           Fo(),
           Fo());
       }
-      const xI = function () {
+      const kI = function () {
           return ["Admin"];
         },
-        OI = function () {
+        MI = function () {
           return ["Admin", "Moderator"];
         },
-        kI = [
+        PI = [
           { path: "", component: dT },
           {
             path: "",
             runGuardsAndResolvers: "always",
             canActivate: [PO],
             children: [
-              { path: "members", component: LA },
+              { path: "members", component: HA },
               {
                 path: "members/:username",
-                component: IA,
-                resolve: { member: pI },
+                component: RA,
+                resolve: { member: fI },
               },
-              { path: "member/edit", component: dI, canDeactivate: [jC] },
+              { path: "member/edit", component: gI, canDeactivate: [jC] },
               { path: "lists", component: ZT },
-              { path: "messages", component: $A },
+              { path: "messages", component: WA },
               {
                 path: "admin",
                 component: (() => {
@@ -47739,17 +47770,17 @@
                           Fo(),
                           Io(2, "div", 0),
                           Io(3, "tabset", 1),
-                          So(4, wI, 3, 0, "tab", 2),
-                          So(5, CI, 3, 0, "tab", 3),
+                          So(4, xI, 3, 0, "tab", 2),
+                          So(5, OI, 3, 0, "tab", 3),
                           Fo(),
                           Fo()),
                           2 & t &&
                             (Qs(4),
-                            Eo("appHasRole", Gl(2, xI)),
+                            Eo("appHasRole", Gl(2, kI)),
                             Qs(1),
-                            Eo("appHasRole", Gl(3, OI)));
+                            Eo("appHasRole", Gl(3, MI)));
                       },
-                      directives: [iA, gI, sA, yI, vI],
+                      directives: [sA, mI, rA, wI, CI],
                       styles: [""],
                     })),
                     t
@@ -47790,11 +47821,11 @@
               },
             ],
           },
-          { path: "not-found", component: YA },
-          { path: "server-error", component: GA },
-          { path: "**", component: YA, pathMatch: "full" },
+          { path: "not-found", component: GA },
+          { path: "server-error", component: QA },
+          { path: "**", component: GA, pathMatch: "full" },
         ];
-      let MI = (() => {
+      let SI = (() => {
         class t {}
         return (
           (t.ɵmod = Ut({ type: t })),
@@ -47803,15 +47834,15 @@
               return new (e || t)();
             },
             imports: [
-              [mw.forRoot(kI, { relativeLinkResolution: "legacy" })],
+              [mw.forRoot(PI, { relativeLinkResolution: "legacy" })],
               mw,
             ],
           })),
           t
         );
       })();
-      const PI = ["*"];
-      let SI = (() => {
+      const DI = ["*"];
+      let TI = (() => {
           class t {
             constructor() {
               (this.autoClose = !0),
@@ -47833,7 +47864,7 @@
             t
           );
         })(),
-        DI = (() => {
+        EI = (() => {
           class t {
             constructor() {
               (this.direction = "down"),
@@ -47853,14 +47884,14 @@
             t
           );
         })();
-      const TI = [
+      const AI = [
         wp({ height: 0, overflow: "hidden" }),
         yp(
           "220ms cubic-bezier(0, 0, 0.2, 1)",
           wp({ height: "*", overflow: "hidden" })
         ),
       ];
-      let EI = (() => {
+      let II = (() => {
           class t {
             constructor(t, e, n, i, s) {
               (this._state = t),
@@ -47868,7 +47899,7 @@
                 (this._renderer = n),
                 (this._element = i),
                 (this.isOpen = !1),
-                (this._factoryDropDownAnimation = s.build(TI)),
+                (this._factoryDropDownAnimation = s.build(AI)),
                 (this._subscription = t.isOpenChange.subscribe((t) => {
                   this.isOpen = t;
                   const e = this._element.nativeElement.querySelector(
@@ -47910,7 +47941,7 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(To(DI), To(vl), To(Xa), To(Za), To(mp));
+              return new (e || t)(To(EI), To(vl), To(Xa), To(Za), To(mp));
             }),
             (t.ɵcmp = jt({
               type: t,
@@ -47924,7 +47955,7 @@
                 "z-index",
                 "1040",
               ],
-              ngContentSelectors: PI,
+              ngContentSelectors: DI,
               decls: 2,
               vars: 8,
               template: function (t, e) {
@@ -47936,7 +47967,7 @@
                     )("show", e.isOpen)("open", e.isOpen);
               },
               directives: function () {
-                return [AI];
+                return [FI];
               },
               encapsulation: 2,
               changeDetection: 0,
@@ -47944,7 +47975,7 @@
             t
           );
         })(),
-        AI = (() => {
+        FI = (() => {
           class t {
             constructor(t, e, n, i, s, r, o) {
               (this._elementRef = t),
@@ -47959,14 +47990,14 @@
                 (this._state.autoClose = this._config.autoClose),
                 (this._state.insideClick = this._config.insideClick),
                 (this._state.isAnimated = this._config.isAnimated),
-                (this._factoryDropDownAnimation = o.build(TI)),
+                (this._factoryDropDownAnimation = o.build(AI)),
                 (this._dropdown = this._cis
                   .createLoader(
                     this._elementRef,
                     this._viewContainerRef,
                     this._renderer
                   )
-                  .provide({ provide: DI, useValue: this._state })),
+                  .provide({ provide: EI, useValue: this._state })),
                 (this.onShown = this._dropdown.onShown),
                 (this.onHidden = this._dropdown.onHidden),
                 (this.isOpenChange = this._state.isOpenChange);
@@ -48061,7 +48092,7 @@
                         const n =
                           this.placement || (e ? "top start" : "bottom start");
                         this._dropdown
-                          .attach(EI)
+                          .attach(II)
                           .to(this.container)
                           .position({ attachment: n })
                           .show({ content: t.templateRef, placement: n }),
@@ -48181,8 +48212,8 @@
                 To(Xa),
                 To(Il),
                 To(OC),
-                To(DI),
-                To(SI),
+                To(EI),
+                To(TI),
                 To(mp)
               );
             }),
@@ -48217,12 +48248,12 @@
                 isOpenChange: "isOpenChange",
               },
               exportAs: ["bs-dropdown"],
-              features: [Ua([DI])],
+              features: [Ua([EI])],
             })),
             t
           );
         })(),
-        II = (() => {
+        RI = (() => {
           class t {
             constructor(t, e, n) {
               t.resolveDropdownMenu({ templateRef: n, viewContainer: e });
@@ -48230,7 +48261,7 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(To(DI), To(Il), To(Ml));
+              return new (e || t)(To(EI), To(Il), To(Ml));
             }),
             (t.ɵdir = qt({
               type: t,
@@ -48243,7 +48274,7 @@
             t
           );
         })(),
-        FI = (() => {
+        NI = (() => {
           class t {
             constructor(t, e, n, i, s) {
               (this._changeDetectorRef = t),
@@ -48302,7 +48333,7 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(To(vl), To(AI), To(Za), To(Xa), To(DI));
+              return new (e || t)(To(vl), To(FI), To(Za), To(Xa), To(EI));
             }),
             (t.ɵdir = qt({
               type: t,
@@ -48327,10 +48358,10 @@
             t
           );
         })(),
-        RI = (() => {
+        LI = (() => {
           class t {
             static forRoot(e) {
-              return { ngModule: t, providers: [OC, vC, DI] };
+              return { ngModule: t, providers: [OC, vC, EI] };
             }
           }
           return (
@@ -48343,7 +48374,7 @@
             t
           );
         })(),
-        NI = (() => {
+        jI = (() => {
           class t {}
           return (
             (t.ɵmod = Ut({ type: t })),
@@ -48354,33 +48385,33 @@
               imports: [
                 [
                   Kh,
-                  RI.forRoot(),
+                  LI.forRoot(),
                   OO.forRoot({ positionClass: "toast-bottom-right" }),
-                  rA.forRoot(),
+                  oA.forRoot(),
                   GE,
-                  eI,
+                  iI,
                   QD.forRoot(),
                   YT.forRoot(),
                   OT.forRoot(),
-                  xA.forRoot(),
+                  OA.forRoot(),
                   RC.forRoot(),
                 ],
-                RI,
+                LI,
                 OO,
-                rA,
+                oA,
                 GE,
-                eI,
+                iI,
                 QD,
                 YT,
                 OT,
-                xA,
+                OA,
                 RC,
               ],
             })),
             t
           );
         })();
-      function LI(t, e) {
+      function HI(t, e) {
         1 & t &&
           (No(0),
           Io(1, "li", 8),
@@ -48400,10 +48431,10 @@
           Fo(),
           Lo());
       }
-      function jI(t, e) {
+      function zI(t, e) {
         1 & t && (Io(0, "li", 8), Io(1, "a", 12), ya(2, "Admin"), Fo(), Fo());
       }
-      function HI(t, e) {
+      function VI(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "div", 17),
@@ -48420,7 +48451,7 @@
             Fo();
         }
       }
-      function zI(t, e) {
+      function UI(t, e) {
         if (
           (1 & t &&
             (Io(0, "div", 13),
@@ -48429,7 +48460,7 @@
             ec(3, "titlecase"),
             Fo(),
             Ro(4, "img", 15),
-            So(5, HI, 6, 0, "div", 16),
+            So(5, VI, 6, 0, "div", 16),
             Fo()),
           2 & t)
         ) {
@@ -48441,7 +48472,7 @@
             Qo("alt", t.userName);
         }
       }
-      function VI(t, e) {
+      function BI(t, e) {
         if (1 & t) {
           const t = Ho();
           Io(0, "form", 21, 22),
@@ -48471,10 +48502,10 @@
             Eo("ngModel", t.model.password);
         }
       }
-      const UI = function () {
+      const qI = function () {
         return ["Admin", "Moderator"];
       };
-      let BI = (() => {
+      let $I = (() => {
           class t {
             constructor(t, e) {
               (this.accountService = t), (this.router = e), (this.model = {});
@@ -48620,13 +48651,13 @@
                   ya(3, "Dating App"),
                   Fo(),
                   Io(4, "ul", 3),
-                  So(5, LI, 10, 0, "ng-container", 4),
+                  So(5, HI, 10, 0, "ng-container", 4),
                   ec(6, "async"),
-                  So(7, jI, 3, 0, "li", 5),
+                  So(7, zI, 3, 0, "li", 5),
                   Fo(),
-                  So(8, zI, 6, 5, "div", 6),
+                  So(8, UI, 6, 5, "div", 6),
                   ec(9, "async"),
-                  So(10, VI, 6, 2, "form", 7),
+                  So(10, BI, 6, 2, "form", 7),
                   ec(11, "async"),
                   Fo(),
                   Fo()),
@@ -48634,7 +48665,7 @@
                     (Qs(5),
                     Eo("ngIf", nc(6, 4, e.accountService.currentUser$)),
                     Qs(2),
-                    Eo("appHasRole", Gl(10, UI)),
+                    Eo("appHasRole", Gl(10, qI)),
                     Qs(1),
                     Eo("ngIf", nc(9, 6, e.accountService.currentUser$)),
                     Qs(2),
@@ -48643,7 +48674,7 @@
                       null === nc(11, 8, e.accountService.currentUser$)
                     ));
               },
-              directives: [iw, Ih, gI, rw, AI, FI, II, C_, Sm, b_, rm, Pm, w_],
+              directives: [iw, Ih, mI, rw, FI, NI, RI, C_, Sm, b_, rm, Pm, w_],
               pipes: [Yh, Gh],
               styles: [
                 ".dropdown-item[_ngcontent-%COMP%], .dropdown-toggle[_ngcontent-%COMP%]{cursor:pointer}img[_ngcontent-%COMP%]{max-height:50px;border:2px solid #fff;display:inline}",
@@ -48652,7 +48683,7 @@
             t
           );
         })(),
-        qI = (() => {
+        YI = (() => {
           class t {
             constructor(t, e) {
               (this.accountService = t),
@@ -48691,13 +48722,13 @@
                   Ro(5, "router-outlet"),
                   Fo());
               },
-              directives: [G_, BI, ow],
+              directives: [G_, $I, ow],
               styles: [""],
             })),
             t
           );
         })(),
-        $I = (() => {
+        WI = (() => {
           class t {
             constructor(t, e) {
               (this.router = t), (this.toastr = e);
@@ -48747,7 +48778,7 @@
             t
           );
         })(),
-        YI = (() => {
+        GI = (() => {
           class t {
             constructor(t) {
               this.accountService = t;
@@ -48774,34 +48805,7 @@
             t
           );
         })(),
-        WI = (() => {
-          class t {
-            constructor(t) {
-              (this.spinnerService = t), (this.busyRequestCount = 0);
-            }
-            busy() {
-              this.busyRequestCount++,
-                this.spinnerService.show(void 0, {
-                  type: "line-scale-party",
-                  bdColor: "rgba(255,255,255,0)",
-                  color: "#333333",
-                });
-            }
-            idle() {
-              this.busyRequestCount--,
-                this.busyRequestCount <= 0 &&
-                  ((this.busyRequestCount = 0), this.spinnerService.hide());
-            }
-          }
-          return (
-            (t.ɵfac = function (e) {
-              return new (e || t)(hi(W_));
-            }),
-            (t.ɵprov = at({ token: t, factory: t.ɵfac, providedIn: "root" })),
-            t
-          );
-        })(),
-        GI = (() => {
+        ZI = (() => {
           class t {
             constructor(t) {
               this.busyService = t;
@@ -48819,26 +48823,26 @@
           }
           return (
             (t.ɵfac = function (e) {
-              return new (e || t)(hi(WI));
+              return new (e || t)(hi(QE));
             }),
             (t.ɵprov = at({ token: t, factory: t.ɵfac })),
             t
           );
         })(),
-        ZI = (() => {
+        QI = (() => {
           class t {}
           return (
-            (t.ɵmod = Ut({ type: t, bootstrap: [qI] })),
+            (t.ɵmod = Ut({ type: t, bootstrap: [YI] })),
             (t.ɵinj = lt({
               factory: function (e) {
                 return new (e || t)();
               },
               providers: [
-                { provide: np, useClass: $I, multi: !0 },
-                { provide: np, useClass: YI, multi: !0 },
+                { provide: np, useClass: WI, multi: !0 },
                 { provide: np, useClass: GI, multi: !0 },
+                { provide: np, useClass: ZI, multi: !0 },
               ],
-              imports: [[Ad, MI, fp, Xf, F_, R_, NI, Q_]],
+              imports: [[Ad, SI, fp, Xf, F_, R_, jI, Q_]],
             })),
             t
           );
@@ -48849,7 +48853,7 @@
         su = !1;
       })(),
         Td()
-          .bootstrapModule(ZI)
+          .bootstrapModule(QI)
           .catch((t) => console.error(t));
     },
     zn8P: function (t, e) {
