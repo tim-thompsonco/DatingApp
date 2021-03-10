@@ -449,6 +449,3 @@ testuserpassword.txt
 
 # Package lock
 client/package-lock.json
-
-# Build folder
-API/wwwroot
