@@ -7,7 +7,7 @@
     <li>C#
     <li>TypeScript
     <li>.NET Core
-    <li>SQLite
+    <li>PostgreSQL
   </ul>
 
 <h2>Authors</h2>
